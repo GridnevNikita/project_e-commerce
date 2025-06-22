@@ -8,7 +8,6 @@ class Product:
 
     name: str
     description: str
-    price: float
     quantity: int
 
     def __init__(self, name: str, description: str, price: float, quantity: int) -> None:
@@ -25,17 +24,12 @@ class Product:
             products = []
 
         for product in products:
-            if product.name == data['name']:
-                product.quantity += data['quantity']
-                if data['price'] > product.price:
-                    product.price = data['price']
+            if product.name == data["name"]:
+                product.quantity += data["quantity"]
+                if data["price"] > product.price:
+                    product.price = data["price"]
                 return product
-        return cls(
-            name=data['name'],
-            description=data['description'],
-            price=data['price'],
-            quantity=data['quantity']
-        )
+        return cls(name=data["name"], description=data["description"], price=data["price"], quantity=data["quantity"])
 
     @property
     def price(self) -> float:
@@ -58,12 +52,12 @@ class Product:
         else:
             self.__price = value
 
+
 class Category:
     """Класс, представляющий категорию товаров"""
 
     name: str
     description: str
-    products: list[Product]
     category_count = 0
     product_count = 0
 
@@ -84,8 +78,7 @@ class Category:
     def products(self) -> str:
         """Возвращает все товары в формате строки"""
         lines = [
-            f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт."
-            for product in self.__products
+            f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт." for product in self.__products
         ]
         return "\n".join(lines)
 
@@ -94,7 +87,7 @@ def read_json_file(path: str) -> List[dict[str, Any]]:
     """Читает JSON-файл по указанному пути и возвращает данные в виде списка словарей"""
     full_path = os.path.abspath(path)
     with open(full_path, "r", encoding="UTF-8") as file:
-        data = json.load(file)
+        data: List[dict[str, Any]] = json.load(file)
     return data
 
 
