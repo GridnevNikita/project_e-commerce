@@ -32,10 +32,14 @@ class Category:
         """Инициализирует объект Category и обновляет счётчики"""
         self.name = name
         self.description = description
-        self.products = products
+        self.__products = products
         Category.category_count += 1
-        Category.product_count += len(products) if products else 0
+        Category.product_count += len(self.__products) if self.__products else 0
 
+    def add_product(self, product: Product) -> None:
+        """Добавляет продукт в приватный список"""
+        self.__products.append(product)
+        Category.product_count += 1
 
 def read_json_file(path: str) -> List[dict[str, Any]]:
     """Читает JSON-файл по указанному пути и возвращает данные в виде списка словарей"""
