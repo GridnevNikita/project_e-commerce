@@ -17,6 +17,16 @@ class Product:
         self.__price = price
         self.quantity = quantity
 
+    def __str__(self) -> str:
+        """Возвращает строковое представление товара."""
+        return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other: "Product") -> float:
+        """Возвращает общую стоимость двух товаров, учитывая цену и количество каждого."""
+        if not isinstance(other, Product):
+            return NotImplemented
+        return self.price * self.quantity + other.price * other.quantity
+
     @classmethod
     def new_product(cls, data: dict, products: Optional[List["Product"]] = None) -> "Product":
         """Создаёт новый товар или обновляет существующий с таким же именем."""
@@ -69,18 +79,20 @@ class Category:
         Category.category_count += 1
         Category.product_count += len(self.__products) if self.__products else 0
 
+    def __str__(self) -> str:
+        """Возвращает строковое представление категории с общим количеством товаров."""
+        total_quantity = sum(prod.quantity for prod in self.__products)
+        return f"{self.name}, количество продуктов: {total_quantity} шт."
+
     def add_product(self, product: Product) -> None:
         """Добавляет продукт в приватный список"""
         self.__products.append(product)
         Category.product_count += 1
 
     @property
-    def products(self) -> str:
-        """Возвращает все товары в формате строки"""
-        lines = [
-            f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт." for product in self.__products
-        ]
-        return "\n".join(lines)
+    def products(self) -> List[Product]:
+        """Возвращает все товары в формате list"""
+        return self.__products
 
 
 def read_json_file(path: str) -> List[dict[str, Any]]:
@@ -104,54 +116,48 @@ def create_objects_from_json(data: List[dict[str, Any]]) -> List[Category]:
     return categories_json
 
 
-# if __name__ == "__main__":
-# data_json = read_json_file("../data/products.json")
-# objects = create_objects_from_json(data_json)
-#
-# for obj in objects:
-#     print(obj.name)
-#     print(obj.description)
-#     print(len(obj.products))
-#     print(obj.products)
-#
-#     for product in obj.products:
-#         print(product.name)
-#         print(product.description)
-#         print(product.price)
-#         print(product.quantity)
-#
-# print("Всего категорий:", Category.category_count)
-# print("Всего товаров:", Category.product_count)
-#
-# if __name__ == "__main__":
-#     product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
-#     product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
-#     product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
-#
-#     category1 = Category(
-#         "Смартфоны",
-#         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
-#         [product1, product2, product3]
-#     )
-#
-#     print(category1.products)
-#     product4 = Product("55\" QLED 4K", "Фоновая подсветка", 123000.0, 7)
-#     category1.add_product(product4)
-#     print(category1.products)
-#     print(category1.product_count)
-#
-#     new_product = Product.new_product(
-#         {"name": "Samsung Galaxy S23 Ultra", "description": "256GB, Серый цвет, 200MP камера", "price": 180000.0,
-#          "quantity": 5})
-#     print(new_product.name)
-#     print(new_product.description)
-#     print(new_product.price)
-#     print(new_product.quantity)
-#
-#     new_product.price = 800
-#     print(new_product.price)
-#
-#     new_product.price = -100
-#     print(new_product.price)
-#     new_product.price = 0
-#     print(new_product.price)
+class CategoryIterator:
+    """Производит итерацию по товарам, которые хранятся в данной категории"""
+
+    def __init__(self, category: Category) -> None:
+        self.category = category
+        self.index = 0
+
+    def __iter__(self) -> "CategoryIterator":
+        return self
+
+    def __next__(self) -> Product:
+        if self.index < len(self.category.products):
+            result = self.category.products[self.index]
+            self.index += 1
+            return result
+        else:
+            raise StopIteration
+
+
+if __name__ == "__main__":
+    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+    product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+    product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+
+    print(str(product1))
+    print(str(product2))
+    print(str(product3))
+
+    category1 = Category(
+        "Смартфоны",
+        "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+        [product1, product2, product3],
+    )
+
+    print(str(category1))
+
+    print(category1.products)
+
+    print(product1 + product2)
+    print(product1 + product3)
+    print(product2 + product3)
+
+    iterator = CategoryIterator(category1)
+    for product in iterator:
+        print(product)
