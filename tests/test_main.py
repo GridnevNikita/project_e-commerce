@@ -1,7 +1,7 @@
 import json
 from unittest.mock import mock_open, patch
 
-from src.main import Category, Product, create_objects_from_json, read_json_file
+from src.main import Category, Product, create_objects_from_json, read_json_file, CategoryIterator
 
 
 def test_product_init(first_product, second_product):
@@ -22,7 +22,7 @@ def test_category_init(first_category):
         first_category.description
         == "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни"
     )
-    assert len(first_category.products.split("\n"))
+    assert len(first_category.products)
 
     assert first_category.category_count == 1
     assert first_category.product_count == 2
@@ -34,7 +34,7 @@ def test_create_objects_from_json(json_data):
     assert isinstance(result, list)
     assert isinstance(result[0], Category)
     assert result[0].name == "Смартфоны"
-    assert len(result[0].products.split("\n")) == 1
+    assert len(result[0].products) == 1
     assert result[0]._Category__products[0].name == "Iphone"
 
 
@@ -89,11 +89,46 @@ def test_price_lowering_accepted(mock_input, first_product):
 
 def test_add_product_increases_list_and_count(first_category):
     initial_count = Category.product_count
-    initial_len = len(first_category.products.split("\n"))
+    initial_len = len(first_category.products)
 
     new_product = Product("New Product", "Описание", 100.0, 10)
     first_category.add_product(new_product)
 
-    assert len(first_category.products.split("\n")) == initial_len + 1
+    assert len(first_category.products) == initial_len + 1
     assert Category.product_count == initial_count + 1
-    assert "New Product" in first_category.products
+    assert any(p.name == "New Product" for p in first_category.products)
+
+def test_product_str(first_product):
+    assert str(first_product) == "Samsung Galaxy S23 Ultra, 180000.0 руб. Остаток: 5 шт."
+
+
+def test_category_str(first_category):
+    assert str(first_category) == "Смартфоны, количество продуктов: 13 шт."
+
+
+def test_product_add(first_product, second_product):
+    result = first_product + second_product
+    expected = (
+        first_product.price * first_product.quantity +
+        second_product.price * second_product.quantity
+    )
+    assert result == expected
+
+
+def test_category_products_type(first_category):
+    products = first_category.products
+    assert isinstance(products, list)
+    assert all(isinstance(p, Product) for p in products)
+
+
+def test_category_iterator(first_category):
+    iterator = CategoryIterator(first_category)
+    products = list(iterator)
+
+    assert len(products) == 2
+    assert products[0].name == "Samsung Galaxy S23 Ultra"
+    assert products[1].name == "Iphone 15"
+
+def test_product_add_with_invalid_type(first_product):
+    result = first_product.__add__("не продукт")
+    assert result is NotImplemented
