@@ -1,6 +1,9 @@
 import json
 from unittest.mock import mock_open, patch
 
+import pytest
+from pandas.core.computation.common import result_type_many
+
 from src.main import Category, Product, create_objects_from_json, read_json_file, CategoryIterator
 
 
@@ -132,3 +135,30 @@ def test_category_iterator(first_category):
 def test_product_add_with_invalid_type(first_product):
     result = first_product.__add__("не продукт")
     assert result is NotImplemented
+
+def test_smartphone_init(first_smartphone):
+    assert first_smartphone.name == "Samsung Galaxy S23 Ultra"
+    assert first_smartphone.description == "256GB, Серый цвет, 200MP камера"
+    assert first_smartphone.price == 180000.0
+    assert first_smartphone.quantity == 5
+    assert first_smartphone.efficiency == 95.5
+    assert first_smartphone.model == "S23 Ultra"
+    assert first_smartphone.memory == 256
+    assert first_smartphone.color == "Серый"
+
+def test_lewngrass_init(first_lawngrass):
+    assert first_lawngrass.name == "Газонная трава"
+    assert first_lawngrass.description == "Элитная трава для газона"
+    assert first_lawngrass.price == 500.0
+    assert first_lawngrass.quantity == 20
+    assert first_lawngrass.country == "Россия"
+    assert first_lawngrass.germination_period == "7 дней"
+    assert first_lawngrass.color == "Зеленый"
+
+def test_smartphone_lawngrass_add(first_smartphone, first_lawngrass):
+    with pytest.raises(TypeError):
+        result = first_smartphone + first_lawngrass
+
+def test_add_product_type_error(first_category):
+    with pytest.raises(TypeError):
+        result = first_category.add_product("не продукт")
