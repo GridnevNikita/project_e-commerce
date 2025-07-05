@@ -119,15 +119,15 @@ class Smartphone(Product):
     """Класс, представляющий товар «Смартфон»"""
 
     def __init__(
-        self,
-        name: str,
-        description: str,
-        price: float,
-        quantity: int,
-        efficiency: float,
-        model: str,
-        memory: int,
-        color: str,
+            self,
+            name: str,
+            description: str,
+            price: float,
+            quantity: int,
+            efficiency: float,
+            model: str,
+            memory: int,
+            color: str,
     ) -> None:
         """Инициализирует объект Smartphone"""
         super().__init__(name, description, price, quantity)
@@ -141,14 +141,14 @@ class LawnGrass(Product):
     """Класс, представляющий товар «Трава газонная»"""
 
     def __init__(
-        self,
-        name: str,
-        description: str,
-        price: float,
-        quantity: int,
-        country: str,
-        germination_period: str,
-        color: str,
+            self,
+            name: str,
+            description: str,
+            price: float,
+            quantity: int,
+            country: str,
+            germination_period: str,
+            color: str,
     ) -> None:
         """Инициализирует объект Smartphone"""
         super().__init__(name, description, price, quantity)
@@ -243,7 +243,6 @@ class Order(BaseCategory):
     def __str__(self) -> str:
         """Возвращает строковое представление заказа."""
         return f"Заказ: {self.product.name}, количество: {self.quantity}, сумма: {self.total_price} руб."
-
 
 # if __name__ == '__main__':
 #     product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
