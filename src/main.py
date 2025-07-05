@@ -4,6 +4,19 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 
+class BaseCategory(ABC):
+    """Абстрактный базовый класс для категории и заказа."""
+
+    @abstractmethod
+    def __init__(self, name: str):
+        self.name = name
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """Вернуть строковое представление продукта."""
+        pass
+
+
 class BaseProduct(ABC):
     """Абстрактный базовый класс для продукта."""
 
@@ -144,7 +157,7 @@ class LawnGrass(Product):
         self.color = color
 
 
-class Category:
+class Category(BaseCategory):
     """Класс, представляющий категорию товаров"""
 
     name: str
@@ -154,7 +167,7 @@ class Category:
 
     def __init__(self, name: str, description: str, products: List[Product]) -> None:
         """Инициализирует объект Category и обновляет счётчики"""
-        self.name = name
+        super().__init__(name)
         self.description = description
         self.__products = products
         Category.category_count += 1
@@ -217,6 +230,19 @@ class CategoryIterator:
             return result
         else:
             raise StopIteration
+
+
+class Order(BaseCategory):
+    def __init__(self, product: Product, quantity: int):
+        """Инициализация заказа"""
+        super().__init__(product.name)
+        self.product = product
+        self.quantity = quantity
+        self.total_price = self.product.price * self.quantity
+
+    def __str__(self) -> str:
+        """Возвращает строковое представление заказа."""
+        return f"Заказ: {self.product.name}, количество: {self.quantity}, сумма: {self.total_price} руб."
 
 
 # if __name__ == '__main__':

@@ -4,7 +4,7 @@ from unittest.mock import mock_open, patch
 import pytest
 from pandas.core.computation.common import result_type_many
 
-from src.main import Category, Product, create_objects_from_json, read_json_file, CategoryIterator
+from src.main import Category, CategoryIterator, Product, create_objects_from_json, read_json_file
 
 
 def test_product_init(first_product, second_product):
@@ -101,6 +101,7 @@ def test_add_product_increases_list_and_count(first_category):
     assert Category.product_count == initial_count + 1
     assert any(p.name == "New Product" for p in first_category.products)
 
+
 def test_product_str(first_product):
     assert str(first_product) == "Samsung Galaxy S23 Ultra, 180000.0 руб. Остаток: 5 шт."
 
@@ -111,10 +112,7 @@ def test_category_str(first_category):
 
 def test_product_add(first_product, second_product):
     result = first_product + second_product
-    expected = (
-        first_product.price * first_product.quantity +
-        second_product.price * second_product.quantity
-    )
+    expected = first_product.price * first_product.quantity + second_product.price * second_product.quantity
     assert result == expected
 
 
@@ -132,9 +130,11 @@ def test_category_iterator(first_category):
     assert products[0].name == "Samsung Galaxy S23 Ultra"
     assert products[1].name == "Iphone 15"
 
+
 def test_product_add_with_invalid_type(first_product):
     result = first_product.__add__("не продукт")
     assert result is NotImplemented
+
 
 def test_smartphone_init(first_smartphone):
     assert first_smartphone.name == "Samsung Galaxy S23 Ultra"
@@ -146,6 +146,7 @@ def test_smartphone_init(first_smartphone):
     assert first_smartphone.memory == 256
     assert first_smartphone.color == "Серый"
 
+
 def test_lewngrass_init(first_lawngrass):
     assert first_lawngrass.name == "Газонная трава"
     assert first_lawngrass.description == "Элитная трава для газона"
@@ -155,10 +156,20 @@ def test_lewngrass_init(first_lawngrass):
     assert first_lawngrass.germination_period == "7 дней"
     assert first_lawngrass.color == "Зеленый"
 
+
 def test_smartphone_lawngrass_add(first_smartphone, first_lawngrass):
     with pytest.raises(TypeError):
         result = first_smartphone + first_lawngrass
 
+
 def test_add_product_type_error(first_category):
     with pytest.raises(TypeError):
         result = first_category.add_product("не продукт")
+
+
+def test_order_total_price(first_order):
+    assert first_order.total_price == first_order.product.price * first_order.quantity
+
+
+def test_order_str(first_order):
+    assert str(first_order) == "Заказ: Samsung Galaxy S23 Ultra, количество: 3, сумма: 540000.0 руб."
