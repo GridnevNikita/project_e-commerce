@@ -4,6 +4,13 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 
+class ProductZeroRaiseError(Exception):
+    """Исключение для товаров с нулевым количеством."""
+
+    def __init__(self, message: str = "Товар с нулевым количеством не может быть добавлен"):
+        super().__init__(message)
+
+
 class BaseCategory(ABC):
     """Абстрактный базовый класс для категории и заказа."""
 
@@ -61,6 +68,8 @@ class Product(PrintMixin, BaseProduct):
 
     def __init__(self, name: str, description: str, price: float, quantity: int) -> None:
         """Инициализирует объект Product"""
+        if quantity == 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
         self.name = name
         self.description = description
         self.__price = price
@@ -180,16 +189,36 @@ class Category(BaseCategory):
 
     def add_product(self, product: Product) -> None:
         """Добавляет продукт в приватный список"""
-        if isinstance(product, Product):
+        if not isinstance(product, Product):
+            raise TypeError("Можно добавлять только объекты Product")
+
+        try:
+            if product.quantity == 0:
+                raise ProductZeroRaiseError()
+        except ProductZeroRaiseError as error:
+            print(error)
+        else:
             self.__products.append(product)
             Category.product_count += 1
-        else:
-            raise TypeError
+            print("Товар успешно добавлен")
+        finally:
+            print("Обработка добавления товара завершена")
 
     @property
     def products(self) -> List[Product]:
         """Возвращает все товары в формате list"""
         return self.__products
+
+    def middle_price(self) -> float:
+        """
+        Вычисляет среднюю цену товаров категории.
+        Если товаров нет, возвращает 0.
+        """
+        try:
+            return sum([product.price for product in self.products]) / len(self.products)
+
+        except ZeroDivisionError:
+            return 0
 
 
 def read_json_file(path: str) -> List[dict[str, Any]]:
@@ -235,6 +264,8 @@ class CategoryIterator:
 class Order(BaseCategory):
     def __init__(self, product: Product, quantity: int):
         """Инициализация заказа"""
+        if quantity == 0:
+            raise ProductZeroRaiseError()
         super().__init__(product.name)
         self.product = product
         self.quantity = quantity
@@ -245,46 +276,31 @@ class Order(BaseCategory):
         return f"Заказ: {self.product.name}, количество: {self.quantity}, сумма: {self.total_price} руб."
 
 # if __name__ == '__main__':
+#     try:
+#         product_invalid = Product("Бракованный товар", "Неверное количество", 1000.0, 0)
+#     except ValueError as e:
+#         print(
+#             "Возникла ошибка ValueError прерывающая работу
+#             программы при попытке добавить продукт с нулевым количеством")
+#     else:
+#         print("Не возникла ошибка ValueError при попытке добавить продукт с нулевым количеством")
+#
 #     product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
 #     product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
 #     product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
 #
-#     print(product1.name)
-#     print(product1.description)
-#     print(product1.price)
-#     print(product1.quantity)
+#     category1 = Category("Смартфоны", "Категория смартфонов", [product1, product2, product3])
 #
-#     print(product2.name)
-#     print(product2.description)
-#     print(product2.price)
-#     print(product2.quantity)
+#     print(category1.middle_price())
 #
-#     print(product3.name)
-#     print(product3.description)
-#     print(product3.price)
-#     print(product3.quantity)
+#     category_empty = Category("Пустая категория", "Категория без продуктов", [])
+#     print(category_empty.middle_price())
 #
-#     category1 = Category("Смартфоны",
-#                          "Смартфоны, как средство не только коммуникации,
-#                          но и получения дополнительных функций для удобства жизни",
-#                          [product1, product2, product3])
-#
-#     print(category1.name == "Смартфоны")
-#     print(category1.description)
-#     print(len(category1.products))
-#     print(category1.category_count)
-#     print(category1.product_count)
-#
-#     product4 = Product("55\" QLED 4K", "Фоновая подсветка", 123000.0, 7)
-#     category2 = Category("Телевизоры",
-#                          "Современный телевизор, который позволяет наслаждаться просмотром,
-#                          станет вашим другом и помощником",
-#                          [product4])
-#
-#     print(category2.name)
-#     print(category2.description)
-#     print(len(category2.products))
-#     print(category2.products)
-#
-#     print(Category.category_count)
-#     print(Category.product_count)
+#     try:
+#         order = Order(product1, 0)
+#     except ProductZeroRaiseError as e:
+#         print(e)
+#     else:
+#         print("Заказ успешно создан")
+#     finally:
+#         print("Обработка добавления заказа завершена")

@@ -2,9 +2,9 @@ import json
 from unittest.mock import mock_open, patch
 
 import pytest
-from pandas.core.computation.common import result_type_many
 
-from src.main import Category, CategoryIterator, Product, create_objects_from_json, read_json_file
+from src.main import Category, CategoryIterator, Product, create_objects_from_json, read_json_file, \
+    ProductZeroRaiseError, Order
 
 
 def test_product_init(first_product, second_product):
@@ -22,8 +22,8 @@ def test_product_init(first_product, second_product):
 def test_category_init(first_category):
     assert first_category.name == "Смартфоны"
     assert (
-        first_category.description
-        == "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни"
+            first_category.description
+            == "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни"
     )
     assert len(first_category.products)
 
@@ -173,3 +173,43 @@ def test_order_total_price(first_order):
 
 def test_order_str(first_order):
     assert str(first_order) == "Заказ: Samsung Galaxy S23 Ultra, количество: 3, сумма: 540000.0 руб."
+
+
+def test_product_zero_quantity():
+    with pytest.raises(ValueError):
+        Product(
+            name="Iphone 15",
+            description="512GB, Gray space",
+            price=210000.0,
+            quantity=0,
+        )
+
+
+def test_product_zero_raise_error_init():
+    error = ProductZeroRaiseError()
+    assert str(error) == "Товар с нулевым количеством не может быть добавлен"
+
+
+def test_order_zero_raise_error(first_product):
+    with pytest.raises(ProductZeroRaiseError):
+        Order(first_product, 0)
+
+
+def test_middle_price(first_category):
+    expected = (
+            sum(product.price for product in first_category.products) / len(first_category.products)
+    )
+    assert first_category.middle_price() == expected
+    empty_category = Category("Пустая", "Нет товаров", [])
+    assert empty_category.middle_price() == 0
+
+
+def test_add_product_zero_quantity(zero_list_products_category, capsys):
+    product_zero = Product("Товар", "Описание", 100.0, 1)
+    product_zero.quantity = 0
+    zero_list_products_category.add_product(product_zero)
+
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split('\n')
+    assert lines[-2] == "Товар с нулевым количеством не может быть добавлен"
+    assert lines[-1] == "Обработка добавления товара завершена"

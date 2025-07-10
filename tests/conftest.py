@@ -40,6 +40,15 @@ def first_category(first_product, second_product):
 
 
 @pytest.fixture
+def zero_list_products_category():
+    return Category(
+        name="Смартфоны",
+        description="Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+        products=[],
+    )
+
+
+@pytest.fixture
 def json_data():
     return [
         {
